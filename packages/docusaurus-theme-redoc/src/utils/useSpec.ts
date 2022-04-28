@@ -4,7 +4,7 @@ import useIsBrowser from '@docusaurus/useIsBrowser';
 import { usePluginData } from '@docusaurus/useGlobalData';
 import { useColorMode } from '@docusaurus/theme-common';
 import '../global';
-import { AppStore, RedocRawOptions } from 'redoc';
+import { AppStore, RedocRawOptions, RedocNormalizedOptions } from 'redoc';
 import { SpecProps } from '../types/common';
 import { GlobalData } from '../types/options';
 
@@ -32,21 +32,25 @@ export function useSpec({ spec, url }: SpecProps) {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const lightStore = new AppStore(spec as any, fullUrl, {
-      ...redocOptions,
-      ...commonOptions,
-      theme: lightTheme,
-    });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const darkStore = new AppStore(spec as any, fullUrl, {
-      ...redocOptions,
-      ...commonOptions,
-      theme: darkTheme,
-    });
+    const store = new AppStore(spec as any, fullUrl);
 
     return {
-      lightStore,
-      darkStore,
+      get lightStore() {
+        store.options = new RedocNormalizedOptions({
+          ...redocOptions,
+          ...commonOptions,
+          theme: lightTheme,
+        });
+        return store;
+      },
+      get darkStore() {
+        store.options = new RedocNormalizedOptions({
+          ...redocOptions,
+          ...commonOptions,
+          theme: darkTheme,
+        });
+        return store;
+      },
     };
   }, [isBrowser, spec, fullUrl, themeOptions]);
 
